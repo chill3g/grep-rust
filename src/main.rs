@@ -1,9 +1,10 @@
-use std::{env::{self}, error::Error, f32::consts::E, fs, process};
-use grep::search;
+use std::{env::{self}, error::Error, fs, process};
+use grep::{search, search_case_insensitive};
 
 struct Config {
     query: String,
     file_path: String,
+    ignore_case: bool,
 }
 
 impl Config {
@@ -11,7 +12,8 @@ impl Config {
         if args.len() < 3 {
             return Err("You need to provide a query and a file name!");
         }
-        Ok(Config { query: args[1].clone(), file_path: args[2].clone() })
+        let ignore_case = env::var("IGNORE_CASE").is_ok();
+        Ok(Config { query: args[1].clone(), file_path: args[2].clone(), ignore_case })
     }
 }
 
@@ -25,7 +27,11 @@ fn run(config: &Config) -> Result<(), Box<dyn Error>> {
     //         process::exit(1);
     //     }
     // };
-    let lines = search(&config.query, &content);
+    let lines = if config.ignore_case {
+        search_case_insensitive(&config.query, &content)
+    } else {
+        search(&config.query, &content)
+    };
     if lines.len() == 0 {
         println!("No result!");
     }
