@@ -1,8 +1,29 @@
-pub mod lib{
-    pub fn parse_config(args: &[String]) -> (&str, &str){
-        let query = &args[1];
-        let file_path = &args[2];
+pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    let mut results =  Vec::new();
 
-        (query, file_path)
+    for line in contents.lines() {
+        if line.contains(query) {
+            results.push(line);
+        }
+    }
+
+    results
+}
+
+#[cfg(test)]
+mod tests {
+    use std::vec;
+
+    use super::*;
+
+    #[test]
+    fn one_result() {
+        let query = "duct";
+        let contents = "\
+Rust:
+safe, fast, productive.
+Pick three.";
+
+        assert_eq!(vec!["safe, fast, productive."], search(query, contents))
     }
 }

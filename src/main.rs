@@ -1,4 +1,5 @@
 use std::{env::{self}, error::Error, f32::consts::E, fs, process};
+use grep::search;
 
 struct Config {
     query: String,
@@ -24,8 +25,13 @@ fn run(config: &Config) -> Result<(), Box<dyn Error>> {
     //         process::exit(1);
     //     }
     // };
-
-    println!("With text:\n{content}");
+    let lines = search(&config.query, &content);
+    if lines.len() == 0 {
+        println!("No result!");
+    }
+    for line in lines {
+        println!("{line}");
+    }
 
     Ok(())
 }
@@ -37,12 +43,10 @@ fn main() {
         println!("problem parsing arguments: {err}");
         process::exit(1);
     });
+    println!("Searching for \"{}\" in file {}", config.query, config.file_path);
 
     if let Err(e) = run(&config) {
         println!("Application error: {e}");
         process::exit(1);
     }
-    println!("Searching for \"{}\" in file {}", config.query, config.file_path);
-
-
 }
