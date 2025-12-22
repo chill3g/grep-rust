@@ -8,12 +8,25 @@ struct Config {
 }
 
 impl Config {
-    fn build(args: &[String]) -> Result<Config, &'static str>{
-        if args.len() < 3 {
+    fn build(args_len: usize, mut args: impl Iterator<Item = String>) -> Result<Config, &'static str>{
+        if args_len < 3 {
             return Err("You need to provide a query and a file name!");
         }
+
+        args.next();
+
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err("You need to provide a query and a file name!"),
+        };
+
+        let file_path = match args.next() {
+            Some(arg) => arg,
+            None => return Err("You need to provide a query and a file name!"),
+        };
+
         let ignore_case = env::var("IGNORE_CASE").is_ok();
-        Ok(Config { query: args[1].clone(), file_path: args[2].clone(), ignore_case })
+        Ok(Config { query, file_path, ignore_case })
     }
 }
 
@@ -43,9 +56,8 @@ fn run(config: &Config) -> Result<(), Box<dyn Error>> {
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-
-    let config = Config::build(&args).unwrap_or_else(|err| {
+    let len = env::args().len();
+    let config = Config::build(len, env::args()).unwrap_or_else(|err| {
         eprintln!("problem parsing arguments: {err}");
         process::exit(1);
     });
